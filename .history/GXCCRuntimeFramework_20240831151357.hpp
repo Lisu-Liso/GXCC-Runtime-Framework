@@ -70,7 +70,7 @@ std::string getlatestversion(){
     fout<<information;
     fout.close();
     system("powershell -Command ./temp.ps1");
-    FILE* stream=fopen("temp.txt","rb");
+    FILE* stream=fopen("temp.txt","r");
     int c=0;
     std::string version;
     int firstrun=0;
@@ -79,9 +79,6 @@ std::string getlatestversion(){
             firstrun++;
             continue;
         }
-        if(c==0) continue;  //I don't know why, but this function really need it;
-        if(c=='\r') continue;  //I don't know why, but this function really need it;
-        if(c=='\n') continue;  //I don't know why, but this function really need it;
         version+=c;
     }
     fclose(stream);

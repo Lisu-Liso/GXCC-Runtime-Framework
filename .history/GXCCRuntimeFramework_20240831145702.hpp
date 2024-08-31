@@ -8,6 +8,10 @@
 #include <cstdlib>
 #include <io.h>
 #include <fcntl.h>
+#include <memory>
+#include <stdexcept>
+#include <array>
+#include "getpid.h"
 
 bool iserrorinrunning(std::string data){
     int n=17;   // sizeof("ERROR IN RUNNING:");
@@ -61,35 +65,41 @@ std::string getversionjson(){
         return versionjson;
     }
 }
-std::string getlatestversion(){
-    int saved_stdout = _dup(_fileno(stdout));
-    freopen("NUL","w",stdout);  // Only for Windows
-    std::string information="$owner = \"Lisu-Liso\"\n$repo = \"GXCC\"\n\n$url = \"https://api.github.com/repos/$owner/$repo/releases/latest\"\n\n$response = Invoke-RestMethod -Uri $url -Headers @{ \"User-Agent\" = \"PowerShell\" }\n\n$latestVersion = $response.tag_name\nWrite-Output $latestVersion  >> temp.txt\n";
-    std::ofstream fout;
-    fout.open("temp.ps1");
-    fout<<information;
-    fout.close();
-    system("powershell -Command ./temp.ps1");
-    FILE* stream=fopen("temp.txt","rb");
-    int c=0;
-    std::string version;
-    int firstrun=0;
-    while((c=fgetc(stream))!=-1){
-        if(firstrun<2){ //I don't know why, but this function need it;
-            firstrun++;
-            continue;
-        }
-        if(c==0) continue;  //I don't know why, but this function really need it;
-        if(c=='\r') continue;  //I don't know why, but this function really need it;
-        if(c=='\n') continue;  //I don't know why, but this function really need it;
-        version+=c;
+std::string exec(const std::string& cmd) {
+    std::array<char, 128> buffer;
+    std::string result;
+    std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd.c_str(), "r"), pclose);
+    if (!pipe) {
+        throw std::runtime_error("popen() failed!");
     }
-    fclose(stream);
-    system("del /q /s temp.ps1");
-    system("del /q /s temp.txt");
-    _dup2(saved_stdout, _fileno(stdout));
-    close(saved_stdout);
-    return version;
+    while (fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr) {
+        result += buffer.data();
+    }
+    return result;
+}
+std::string getLatestVersion() {
+    // PowerShell command to get the latest version from GitHub API
+    std::string psCommand = R"(
+    $owner = "Lisu-Liso"
+    $repo = "GXCC"
+    $url = "https://api.github.com/repos/$owner/$repo/releases/latest"
+    $response = Invoke-RestMethod -Uri $url -Headers @{ "User-Agent" = "PowerShell" }
+    $latestVersion = $response.tag_name
+    Write-Output $latestVersion
+    )";
+    // Execute the PowerShell command and get the output
+    std::string command = "powershell -Command \"" + psCommand + "\"";
+    std::string output = exec(command);
+
+    // Trim any leading or trailing whitespace
+    output.erase(0, output.find_first_not_of(" \n\r\t"));
+    output.erase(output.find_last_not_of(" \n\r\t") + 1);
+
+    return output;
+}
+bool isGXCCrunning(){
+    int id=ProcessName2Pid("GXCC_Core.exe");
+    return id;  // If id != 0 return 1
 }
 
 #endif

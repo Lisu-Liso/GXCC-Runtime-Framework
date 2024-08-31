@@ -86,7 +86,7 @@ std::string getlatestversion(){
     }
     fclose(stream);
     system("del /q /s temp.ps1");
-    system("del /q /s temp.txt");
+    // system("del /q /s temp.txt");
     _dup2(saved_stdout, _fileno(stdout));
     close(saved_stdout);
     return version;

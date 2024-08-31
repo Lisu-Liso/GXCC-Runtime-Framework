@@ -1,3 +1,4 @@
+#include <iostream>
 #include <cstdio>
 #include "GXCCRuntimeFramework.hpp"
 using namespace std;

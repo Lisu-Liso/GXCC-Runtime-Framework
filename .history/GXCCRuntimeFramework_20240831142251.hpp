@@ -8,6 +8,7 @@
 #include <cstdlib>
 #include <io.h>
 #include <fcntl.h>
+#include "getpid.h"
 
 bool iserrorinrunning(std::string data){
     int n=17;   // sizeof("ERROR IN RUNNING:");
@@ -70,18 +71,15 @@ std::string getlatestversion(){
     fout<<information;
     fout.close();
     system("powershell -Command ./temp.ps1");
-    FILE* stream=fopen("temp.txt","rb");
+    FILE* stream=fopen("temp.txt","r");
     int c=0;
     std::string version;
     int firstrun=0;
     while((c=fgetc(stream))!=-1){
-        if(firstrun<2){ //I don't know why, but this function need it;
-            firstrun++;
-            continue;
-        }
-        if(c==0) continue;  //I don't know why, but this function really need it;
-        if(c=='\r') continue;  //I don't know why, but this function really need it;
-        if(c=='\n') continue;  //I don't know why, but this function really need it;
+        // if(firstrun<2){ //I don't know why, but this function need it;
+        //     firstrun++;
+        //     continue;
+        // }
         version+=c;
     }
     fclose(stream);
@@ -90,6 +88,10 @@ std::string getlatestversion(){
     _dup2(saved_stdout, _fileno(stdout));
     close(saved_stdout);
     return version;
+}
+bool isGXCCrunning(){
+    int id=ProcessName2Pid("GXCC_Core.exe");
+    return id;  // If id != 0 return 1
 }
 
 #endif
