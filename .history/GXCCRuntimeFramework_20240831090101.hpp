@@ -1,0 +1,5 @@
+#ifndef __GXCCRUNTIMEFRAMEWORK_H__
+
+#define __GXCCRUNTIMEFRAMEWORK_H__
+
+#endif
