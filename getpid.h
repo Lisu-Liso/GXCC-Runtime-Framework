@@ -19,7 +19,7 @@ DWORD ProcessName2Pid(char * ProcessName) {
 			processId = processEntry.th32ProcessID;
 			break;
 		}
-	} while (Process32Next(processAll, &processEntry));
+	} while (Process32Next(processAll, &processEntry));	// There is a error, but it can run as expected.
 	return processId;
 }
 
